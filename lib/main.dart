@@ -1,370 +1,300 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 
-void main() {
-  runApp(const GoldMindApp());
-}
-
-const gold = Color(0xFFFFC857);
-const bg = Color(0xFF0B0F14);
-const panel = Color(0xFF141A22);
-const panel2 = Color(0xFF1C2530);
-const green = Color(0xFF35D07F);
-const red = Color(0xFFFF6B6B);
-const muted = Color(0xFF9AA5B1);
+void main() => runApp(const GoldMindApp());
 
 class GoldMindApp extends StatelessWidget {
   const GoldMindApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'GoldMind AI',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: bg,
-        colorScheme: const ColorScheme.dark(primary: gold),
-        useMaterial3: true,
+      theme: ThemeData.dark(useMaterial3: true).copyWith(
+        scaffoldBackgroundColor: const Color(0xFF0A1218),
+        cardColor: const Color(0xFF13202A),
       ),
-      home: const AppShell(),
+      home: const SplashScreen(),
     );
   }
 }
 
-class AppShell extends StatefulWidget {
-  const AppShell({super.key});
+// SPLASH
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
   @override
-  State<AppShell> createState() => _AppShellState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
-
-class _AppShellState extends State<AppShell> {
-  int index = 0;
-
-  final pages = const [
-    DashboardPage(),
-    AnalysisPage(),
-    TradePage(),
-    HistoryPage(),
-    SettingsPage(),
-  ];
-
-  final labels = const ['Home','Analysis','Trade','History','Settings'];
-  final icons = const [
-    Icons.home_outlined,
-    Icons.analytics_outlined,
-    Icons.candlestick_chart,
-    Icons.history,
-    Icons.settings_outlined,
-  ];
-
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Timer(const Duration(seconds: 2), () {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainNav()));
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(child: pages[index]),
-      bottomNavigationBar: NavigationBar(
-        backgroundColor: panel,
-        indicatorColor: gold.withOpacity(.18),
-        selectedIndex: index,
-        onDestinationSelected: (i) => setState(() => index = i),
-        destinations: List.generate(labels.length, (i) =>
-          NavigationDestination(icon: Icon(icons[i]), label: labels[i])),
+      body: Container(
+        decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF0A1218), Color(0xFF10202E)], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
+        child: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Container(width: 100, height: 100, decoration: BoxDecoration(color: const Color(0xFFC9A86A), borderRadius: BorderRadius.circular(25)), child: const Icon(Icons.trending_up, size: 60, color: Colors.black)),
+          const SizedBox(height: 20),
+          const Text('GoldMind AI', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+          const Text('XAUUSD Trading Assistant', style: TextStyle(color: Colors.grey)),
+          const SizedBox(height: 40),
+          const SizedBox(width: 200, child: LinearProgressIndicator(color: Color(0xFFC9A86A))),
+          const SizedBox(height: 10),
+          const Text('Loading...', style: TextStyle(color: Colors.grey, fontSize: 12)),
+        ])),
       ),
     );
   }
 }
 
-class PageWrap extends StatelessWidget {
-  final String title;
-  final Widget child;
-  const PageWrap({super.key, required this.title, required this.child});
-
+// MAIN NAVIGATION
+class MainNav extends StatefulWidget {
+  const MainNav({super.key});
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(18, 16, 18, 8),
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Row(children: [
-        const Icon(Icons.auto_graph, color: gold),
-        const SizedBox(width: 8),
-        Text(title, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
-        const Spacer(),
-        const Icon(Icons.notifications_none, color: muted),
-      ]),
-      const SizedBox(height: 16),
-      Expanded(child: child),
-    ]),
-  );
+  State<MainNav> createState() => _MainNavState();
+}
+class _MainNavState extends State<MainNav> {
+  int idx = 0;
+  final pages = [const DashboardPage(), const AnalysisPage(), const TradeSetupPage(), const HistoryPage(), const SettingsPage()];
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: pages[idx],
+      bottomNavigationBar: NavigationBar(
+        backgroundColor: const Color(0xFF0F1D28),
+        selectedIndex: idx,
+        onDestinationSelected: (i) => setState(() => idx = i),
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
+          NavigationDestination(icon: Icon(Icons.analytics), label: 'Analysis'),
+          NavigationDestination(icon: Icon(Icons.swap_horiz), label: 'Trade'),
+          NavigationDestination(icon: Icon(Icons.history), label: 'History'),
+          NavigationDestination(icon: Icon(Icons.settings), label: 'Settings'),
+        ],
+      ),
+    );
+  }
 }
 
-class CardBox extends StatelessWidget {
-  final Widget child;
-  const CardBox({super.key, required this.child});
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: panel,
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: Colors.white.withOpacity(.06)),
-    ),
-    child: child,
-  );
-}
-
+// DASHBOARD
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
-
   @override
-  Widget build(BuildContext context) => PageWrap(
-    title: 'GoldMind AI',
-    child: ListView(children: [
-      CardBox(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('XAUUSD', style: TextStyle(color: muted, fontSize: 15)),
-        const SizedBox(height: 6),
-        const Text('\$2,491.32', style: TextStyle(fontSize: 34, fontWeight: FontWeight.w900)),
-        const SizedBox(height: 4),
-        const Text('+12.46 (+0.50%)', style: TextStyle(color: green, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 18),
-        Container(height: 115, decoration: BoxDecoration(
-          color: panel2, borderRadius: BorderRadius.circular(12)),
-          child: const Center(child: Icon(Icons.show_chart, color: gold, size: 72))),
-      ])),
-      const SizedBox(height: 14),
-      const Text('MARKET BIAS', style: TextStyle(color: muted, fontWeight: FontWeight.bold)),
-      const SizedBox(height: 8),
-      CardBox(child: Row(children: [
-        const Icon(Icons.trending_up, color: green, size: 36),
-        const SizedBox(width: 12),
-        const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('BULLISH', style: TextStyle(fontSize: 21, color: green, fontWeight: FontWeight.w900)),
-          Text('Higher timeframe trend is positive', style: TextStyle(color: muted)),
-        ])),
-      ])),
-      const SizedBox(height: 14),
-      const Text('MULTI-TIMEFRAME', style: TextStyle(color: muted, fontWeight: FontWeight.bold)),
-      const SizedBox(height: 8),
-      const Row(children: [
-        Expanded(child: TrendTile('H4','BULLISH',green)),
-        SizedBox(width: 8),
-        Expanded(child: TrendTile('H1','BULLISH',green)),
-        SizedBox(width: 8),
-        Expanded(child: TrendTile('M15','PULLBACK',gold)),
-      ]),
-      const SizedBox(height: 14),
-      CardBox(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Row(children: [
-          Icon(Icons.psychology, color: gold),
-          SizedBox(width: 8),
-          Text('AI MARKET INSIGHT', style: TextStyle(fontWeight: FontWeight.bold)),
+  Widget build(BuildContext context) {
+    return _Wrap(title: 'GoldMind AI', children: [
+      _Card(children: [
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('XAUUSD', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            Text('Gold Spot / US Dollar', style: TextStyle(color: Colors.grey, fontSize: 12)),
+            SizedBox(height: 8),
+            Text('2,491.32', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+            Text('+12.46 (+0.50%)', style: TextStyle(color: Colors.green, fontSize: 12)),
+          ]),
+          Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(color: Colors.green.withOpacity(0.2), borderRadius: BorderRadius.circular(20)), child: const Text('Bullish', style: TextStyle(color: Colors.green)))
         ]),
-        const SizedBox(height: 10),
-        const Text('Trend is bullish on H4 and H1. Price is near a pullback area. Wait for confirmation before a paper setup.'),
-      ])),
-    ]),
-  );
+        const SizedBox(height: 16),
+        Container(height: 120, decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(12)), child: CustomPaint(painter: ChartPainter(), size: const Size(double.infinity, 120))),
+        const SizedBox(height: 12),
+        const _AIBox(text: 'Trend is uptrend on H4 and H4. Price holding above EMA 50 & 200. Look for buy opportunities on pullbacks.'),
+      ]),
+    ]);
+  }
 }
 
-class TrendTile extends StatelessWidget {
-  final String tf, value;
-  final Color color;
-  const TrendTile(this.tf,this.value,this.color,{super.key});
-  @override
-  Widget build(BuildContext context) => CardBox(child: Column(children: [
-    Text(tf, style: const TextStyle(color: muted)),
-    const SizedBox(height: 6),
-    Text(value, textAlign: TextAlign.center, style: TextStyle(fontSize: 12,color: color,fontWeight: FontWeight.bold)),
-  ]));
-}
-
+// ANALYSIS
 class AnalysisPage extends StatelessWidget {
   const AnalysisPage({super.key});
   @override
-  Widget build(BuildContext context) => PageWrap(
-    title: 'Market Analysis',
-    child: ListView(children: [
-      const SectionTitle('TECHNICAL INDICATORS'),
-      const SizedBox(height: 8),
-      const CardBox(child: Column(children: [
-        MetricRow('EMA 50','2,473.21','UPTREND',green),
-        Divider(color: Colors.white12),
-        MetricRow('EMA 200','2,451.87','UPTREND',green),
-        Divider(color: Colors.white12),
-        MetricRow('RSI (14)','62.4','NEUTRAL',gold),
-        Divider(color: Colors.white12),
-        MetricRow('ATR (14)','18.7','VOLATILITY',muted),
-      ])),
-      const SizedBox(height: 14),
-      const SectionTitle('KEY LEVELS'),
-      const SizedBox(height: 8),
-      const CardBox(child: Column(children: [
-        MetricRow('Resistance 1','2,505.00','',red),
-        Divider(color: Colors.white12),
-        MetricRow('Resistance 2','2,520.00','',red),
-        Divider(color: Colors.white12),
-        MetricRow('Support 1','2,470.00','',green),
-        Divider(color: Colors.white12),
-        MetricRow('Support 2','2,455.00','',green),
-      ])),
-      const SizedBox(height: 14),
-      CardBox(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('TECHNICAL SUMMARY', style: TextStyle(color: gold,fontWeight: FontWeight.bold)),
-        const SizedBox(height: 10),
-        const Text('Price remains above EMA 50 and EMA 200. Momentum is positive, while RSI is not yet at an extreme level.'),
-      ])),
-    ]),
-  );
-}
-
-class MetricRow extends StatelessWidget {
-  final String a,b,c; final Color color;
-  const MetricRow(this.a,this.b,this.c,this.color,{super.key});
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 5),
-    child: Row(children: [
-      Expanded(child: Text(a, style: const TextStyle(color: muted))),
-      Text(b, style: const TextStyle(fontWeight: FontWeight.bold)),
-      if(c.isNotEmpty) ...[const SizedBox(width: 8), Text(c, style: TextStyle(color: color,fontSize: 11,fontWeight: FontWeight.bold))],
-    ]),
-  );
-}
-
-class TradePage extends StatefulWidget {
-  const TradePage({super.key});
-  @override
-  State<TradePage> createState() => _TradePageState();
-}
-
-class _TradePageState extends State<TradePage> {
-  bool paperOpen=false;
-  @override
-  Widget build(BuildContext context) => PageWrap(
-    title: 'Trade Setup',
-    child: ListView(children: [
-      CardBox(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          const Icon(Icons.arrow_upward, color: green),
-          const SizedBox(width: 8),
-          Text('BUY SETUP', style: TextStyle(color: green,fontWeight: FontWeight.w900,fontSize: 22)),
-          const Spacer(),
-          const Text('PAPER', style: TextStyle(color: gold,fontWeight: FontWeight.bold)),
-        ]),
-        const SizedBox(height: 14),
-        const SetupRow('Entry Price','2,486.50'),
-        const SetupRow('Stop Loss (SL)','2,473.00', red),
-        const SetupRow('Take Profit (TP)','2,503.00', green),
-        const SetupRow('Risk : Reward','1 : 2.3', gold),
-        const SizedBox(height: 16),
-        SizedBox(width: double.infinity, child: FilledButton.icon(
-          style: FilledButton.styleFrom(backgroundColor: paperOpen?panel2:green,foregroundColor: Colors.black,padding: const EdgeInsets.all(15)),
-          onPressed: ()=>setState(()=>paperOpen=!paperOpen),
-          icon: Icon(paperOpen?Icons.close:Icons.play_arrow),
-          label: Text(paperOpen?'CLOSE PAPER TRADE':'OPEN PAPER TRADE'),
-        )),
-      ])),
-      const SizedBox(height: 14),
-      CardBox(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('AI REASONING', style: TextStyle(color: gold,fontWeight: FontWeight.bold)),
-        const SizedBox(height: 10),
-        const Text('• H4 and H1 trends are bullish\n• Price remains above major moving averages\n• Recent pullback is near support\n• Stop is below the invalidation zone'),
-      ])),
+  Widget build(BuildContext context) {
+    return _Wrap(title: 'Market Analysis', children: [
+      _Tabs(),
       const SizedBox(height: 12),
-      const Text('Demo only. This screen does not connect to a broker.', style: TextStyle(color: muted,fontSize: 12)),
-    ]),
-  );
+      _Card(children: [
+        _Row2('Trend', '▲ Uptrend', Colors.green),
+        _Row2('EMA 50', '2,473.21'),
+        _Row2('EMA 200', '2,451.87'),
+        _Row2('RSI (14)', '62.4 (Neutral)'),
+        _Row2('ATR (14)', '18.7'),
+        const Divider(),
+        const Text('Key Levels', style: TextStyle(fontWeight: FontWeight.bold)),
+        _Row2('Resistance 1', '2,505.00'),
+        _Row2('Resistance 2', '2,520.00'),
+        _Row2('Support 1', '2,470.00'),
+        _Row2('Support 2', '2,455.00'),
+      ]),
+      _Card(children: [
+        const Text('Technical Summary', style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 6),
+        const Text('Price is above EMA 50 & 200. RSI is healthy and trending up. Look for buy setups on pullbacks to 2,470 - 2,480.', style: TextStyle(color: Colors.grey, fontSize: 13)),
+      ]),
+    ]);
+  }
 }
 
-class SetupRow extends StatelessWidget {
-  final String a,b; final Color? color;
-  const SetupRow(this.a,this.b,[this.color],{super.key});
+// TRADE SETUP
+class TradeSetupPage extends StatefulWidget {
+  const TradeSetupPage({super.key});
   @override
-  Widget build(BuildContext context)=>Padding(
-    padding: const EdgeInsets.symmetric(vertical: 9),
-    child: Row(children:[Text(a,style:const TextStyle(color:muted)),const Spacer(),Text(b,style:TextStyle(color:color??Colors.white,fontWeight:FontWeight.bold))]));
+  State<TradeSetupPage> createState() => _TradeSetupPageState();
+}
+class _TradeSetupPageState extends State<TradeSetupPage> {
+  bool isActive = false;
+  @override
+  Widget build(BuildContext context) {
+    if (isActive) {
+      return _Wrap(title: 'Active Trades', children: [
+        _Card(color: const Color(0xFF1A2E1F), children: [
+          Row(children: [const Icon(Icons.monetization_on, color: Color(0xFFC9A86A)), const SizedBox(width: 8), const Text('XAUUSD BUY 0.10 lot', style: TextStyle(fontWeight: FontWeight.bold)), const Spacer(), Container(padding: const EdgeInsets.all(4), decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(4)), child: const Text('LIVE', style: TextStyle(fontSize: 10)))]),
+          const SizedBox(height: 12),
+          _Row2('Entry', '2,486.50'), _Row2('SL', '2,473.00'), _Row2('TP', '2,503.00'), _Row2('Current', '2,491.32'),
+          const SizedBox(height: 6),
+          const Text('+58.20 USD (+0.39%)', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 10),
+          LinearProgressIndicator(value: 0.6, color: Colors.green, backgroundColor: Colors.white10),
+        ]),
+        const SizedBox(height: 12),
+        SizedBox(width: double.infinity, child: FilledButton(style: FilledButton.styleFrom(backgroundColor: Colors.white10), onPressed: () => setState(() => isActive = false), child: const Text('Close Trade'))),
+        _Card(children: [
+          const Text('Account Balance (Paper)'),
+          const Text('10,000.00 USD', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const Text('+48.20 USD', style: TextStyle(color: Colors.green)),
+        ])
+      ]);
+    }
+    return _Wrap(title: 'Trade Signal', children: [
+      _Card(color: const Color(0xFF1A2E1F), children: [
+        Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(8)), child: const Row(children: [Icon(Icons.trending_up, color: Colors.white), SizedBox(width: 8), Text('BUY SETUP', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))])),
+        const SizedBox(height: 12),
+        _Row2('Entry Price', '2,486.50'), _Row2('Stop Loss (SL)', '2,473.00'), _Row2('Take Profit (TP1)', '2,503.00'), _Row2('Take Profit (TP2)', '2,520.00'),
+        const Divider(),
+        _Row2('Risk : Reward', '1 : 2.3'), _Row2('Position Size (Paper)', '0.10 lot'),
+        const SizedBox(height: 12),
+        SizedBox(width: double.infinity, child: FilledButton(style: FilledButton.styleFrom(backgroundColor: const Color(0xFF00C853)), onPressed: () => setState(() => isActive = true), child: const Text('Place Paper Trade'))),
+      ]),
+      _Card(children: [
+        const Text('Reasoning', style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 6),
+        const Text('• Price above EMA 50 & 200\n• RSI turning up from 50\n• Strong support at 2,470', style: TextStyle(color: Colors.grey, fontSize: 13)),
+      ]),
+    ]);
+  }
 }
 
+// HISTORY + INSIGHTS + MARKET + SETTINGS
 class HistoryPage extends StatelessWidget {
   const HistoryPage({super.key});
   @override
-  Widget build(BuildContext context)=>PageWrap(
-    title:'Trade History',
-    child:ListView(children:[
-      CardBox(child: Column(children:[
-        const Row(children:[
-          Expanded(child: Stat('Trades','12')),
-          Expanded(child: Stat('Wins','7')),
-          Expanded(child: Stat('P/L','+\$48.20',green)),
-        ]),
+  Widget build(BuildContext context) {
+    return _Wrap(title: 'Trade History', children: [
+      _Card(children: [
+        _Hist('XAUUSD BUY', '+48.20', true), _Hist('XAUUSD SELL', '+32.10', true),
+        _Hist('XAUUSD BUY', '-18.50', false), _Hist('XAUUSD SELL', '+67.40', true),
+      ]),
+      _Card(children: [
+        const Row(children: [Icon(Icons.lightbulb, color: Color(0xFFC9A86A)), SizedBox(width: 8), Text('GoldMind AI', style: TextStyle(fontWeight: FontWeight.bold))]),
+        const SizedBox(height: 8),
+        const Text('Based on current market conditions, the probability of a bullish move in XAUUSD is high (72%) in the next 6-12 hours.', style: TextStyle(fontSize: 13, color: Colors.grey)),
         const SizedBox(height: 12),
-        Divider(color: Colors.white12),
-        ...const [
-          HistoryRow('XAUUSD','BUY','+\$48.20',green),
-          HistoryRow('XAUUSD','SELL','+\$32.10',green),
-          HistoryRow('XAUUSD','BUY','-\$18.50',red),
-          HistoryRow('XAUUSD','SELL','+\$67.40',green),
-          HistoryRow('XAUUSD','BUY','-\$12.30',red),
-        ]
-      ]))
-    ])
-  );
+        const Text('Key Insights', style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text('✓ Trend: Uptrend (H1 & H4)\n✓ Momentum: Strong\n✓ RSI: Not overbought\n✓ Volume: Increasing\n✓ Key Level: 2,503 (resistance)', style: TextStyle(fontSize: 12, color: Colors.grey)),
+      ]),
+    ]);
+  }
 }
 
-class Stat extends StatelessWidget {
-  final String a,b; final Color? color;
-  const Stat(this.a,this.b,[this.color],{super.key});
-  @override
-  Widget build(BuildContext context)=>Column(children:[Text(a,style:const TextStyle(color:muted,fontSize:12)),const SizedBox(height:5),Text(b,style:TextStyle(fontWeight:FontWeight.bold,color:color))]);
-}
-
-class HistoryRow extends StatelessWidget {
-  final String symbol,type,pnl; final Color color;
-  const HistoryRow(this.symbol,this.type,this.pnl,this.color,{super.key});
-  @override
-  Widget build(BuildContext context)=>Padding(
-    padding:const EdgeInsets.symmetric(vertical:11),
-    child:Row(children:[
-      const CircleAvatar(radius:16,backgroundColor:panel2,child:Icon(Icons.monetization_on,color:gold,size:17)),
-      const SizedBox(width:10),
-      Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(symbol,style:const TextStyle(fontWeight:FontWeight.bold)),Text('Paper trade',style:const TextStyle(color:muted,fontSize:12))])),
-      Column(crossAxisAlignment:CrossAxisAlignment.end,children:[Text(type,style:TextStyle(color:type=='BUY'?green:red,fontWeight:FontWeight.bold)),Text(pnl,style:TextStyle(color:color,fontWeight:FontWeight.bold))])
-    ]));
-}
-
-class SettingsPage extends StatefulWidget {
+class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
   @override
-  State<SettingsPage> createState()=>_SettingsPageState();
+  Widget build(BuildContext context) {
+    return _Wrap(title: 'Settings', children: [
+      _Card(children: [
+        _SetTile(Icons.swap_horiz, 'Trading Mode', 'Paper Trading'),
+        _SetTile(Icons.percent, 'Risk Per Trade', '1%'),
+        _SetTile(Icons.layers, 'Lot Size', '0.10'),
+        _SetTile(Icons.notifications, 'Notifications', 'On'),
+        _SetTile(Icons.dark_mode, 'Theme', 'Dark'),
+        _SetTile(Icons.language, 'Language', 'English'),
+        _SetTile(Icons.cable, 'MTS Connection', 'Not Connected', isError: true),
+      ]),
+      SizedBox(width: double.infinity, child: FilledButton(onPressed: () {}, child: const Text('Connect MT5'))),
+      const SizedBox(height: 20),
+      _Card(children: [
+        Center(child: Column(children: [
+          Container(width: 60, height: 60, decoration: BoxDecoration(color: const Color(0xFFC9A86A), borderRadius: BorderRadius.circular(15)), child: const Icon(Icons.trending_up, color: Colors.black)),
+          const SizedBox(height: 8),
+          const Text('GoldMind AI v0.1'),
+          const Text('Smarter Analysis. Better Trades.', style: TextStyle(color: Colors.grey, fontSize: 12)),
+          const SizedBox(height: 10),
+          const Text('✓ AI Market Analysis\n✓ Multi-Timeframe (H4/H1/M15)\n✓ EMA 50/200 + RSI + ATR\n✓ Support & Resistance\n✓ Auto Trade Execution (Paper)\n✓ Trade History & Performance', style: TextStyle(fontSize: 11, color: Colors.grey)),
+        ]))
+      ])
+    ]);
+  }
 }
 
-class _SettingsPageState extends State<SettingsPage>{
-  bool notifications=true;
+// WIDGETS
+class _Wrap extends StatelessWidget {
+  final String title; final List<Widget> children;
+  const _Wrap({required this.title, required this.children});
   @override
-  Widget build(BuildContext context)=>PageWrap(
-    title:'Settings',
-    child:ListView(children:[
-      CardBox(child:Column(children:[
-        ListTile(leading:const Icon(Icons.shield_outlined,color:gold),title:const Text('Trading Mode'),subtitle:const Text('Paper Trading'),trailing:const Icon(Icons.chevron_right)),
-        const Divider(color:Colors.white12),
-        ListTile(leading:const Icon(Icons.percent,color:gold),title:const Text('Risk Per Trade'),subtitle:const Text('Demo setting: 1%'),trailing:const Icon(Icons.chevron_right)),
-        const Divider(color:Colors.white12),
-        SwitchListTile(value:notifications,onChanged:(v)=>setState(()=>notifications=v),title:const Text('Notifications'),secondary:const Icon(Icons.notifications,color:gold)),
-        const Divider(color:Colors.white12),
-        const ListTile(leading:Icon(Icons.link,color:gold),title:Text('MT5 Connection'),subtitle:Text('Not connected — planned integration')),
-      ])),
-      const SizedBox(height:14),
-      CardBox(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-        const Text('ABOUT',style:TextStyle(color:gold,fontWeight:FontWeight.bold)),
-        const SizedBox(height:8),
-        const Text('GoldMind AI v0.1'),
-        const SizedBox(height:6),
-        const Text('XAUUSD paper analysis prototype',style:TextStyle(color:muted)),
-      ]))
-    ])
-  );
+  Widget build(BuildContext context) {
+    return Scaffold(appBar: AppBar(title: Text(title), backgroundColor: const Color(0xFF0A1218)), body: ListView(padding: const EdgeInsets.all(16), children: children));
+  }
 }
-
-class SectionTitle extends StatelessWidget {
-  final String text;
-  const SectionTitle(this.text,{super.key});
+class _Card extends StatelessWidget {
+  final List<Widget> children; final Color? color;
+  const _Card({required this.children, this.color});
   @override
-  Widget build(BuildContext context)=>Text(text,style:const TextStyle(color:muted,fontWeight:FontWeight.bold,fontSize:12));
+  Widget build(BuildContext context) => Card(color: color, margin: const EdgeInsets.only(bottom: 12), child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: children)));
+}
+class _Row2 extends StatelessWidget {
+  final String a, b; final Color? col;
+  const _Row2(this.a, this.b, [this.col]);
+  @override
+  Widget build(BuildContext context) => Padding(padding: const EdgeInsets.symmetric(vertical: 4), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(a, style: const TextStyle(color: Colors.grey, fontSize: 13)), Text(b, style: TextStyle(color: col, fontWeight: FontWeight.bold, fontSize: 13))]));
+}
+class _Tabs extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Row(children: [ _Tab('H4', true), _Tab('H1', false), _Tab('M15', false)]);
+}
+class _Tab extends StatelessWidget {
+  final String t; final bool sel;
+  const _Tab(this.t, this.sel);
+  @override
+  Widget build(BuildContext context) => Container(margin: const EdgeInsets.only(right: 8), padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6), decoration: BoxDecoration(color: sel? const Color(0xFFC9A86A) : Colors.white10, borderRadius: BorderRadius.circular(20)), child: Text(t, style: TextStyle(color: sel? Colors.black : Colors.white, fontSize: 12)));
+}
+class _AIBox extends StatelessWidget {
+  final String text; const _AIBox({required this.text});
+  @override
+  Widget build(BuildContext context) => Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: const Color(0xFFC9A86A).withOpacity(0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFFC9A86A).withOpacity(0.3))), child: Row(children: [const Icon(Icons.auto_awesome, color: Color(0xFFC9A86A), size: 16), const SizedBox(width: 8), Expanded(child: Text(text, style: const TextStyle(fontSize: 12, color: Colors.grey)))]));
+}
+class _Hist extends StatelessWidget {
+  final String pair, pnl; final bool profit;
+  const _Hist(this.pair, this.pnl, this.profit);
+  @override
+  Widget build(BuildContext context) => Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(pair, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)), const Text('Aug 15, 2025', style: TextStyle(color: Colors.grey, fontSize: 10))]), Text(pnl, style: TextStyle(color: profit? Colors.green : Colors.red, fontWeight: FontWeight.bold))])),
+}
+class _SetTile extends StatelessWidget {
+  final IconData icon; final String t, v; final bool isError;
+  const _SetTile(this.icon, this.t, this.v, {this.isError = false});
+  @override
+  Widget build(BuildContext context) => ListTile(leading: Icon(icon, color: Colors.grey), title: Text(t, style: const TextStyle(fontSize: 14)), trailing: Text(v, style: TextStyle(fontSize: 12, color: isError? Colors.red : const Color(0xFFC9A86A))), contentPadding: EdgeInsets.zero);
+}
+class ChartPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.green..strokeWidth = 2..style = PaintingStyle.stroke;
+    final path = Path(); path.moveTo(0, size.height * 0.7);
+    path.lineTo(size.width * 0.2, size.height * 0.6); path.lineTo(size.width * 0.4, size.height * 0.65);
+    path.lineTo(size.width * 0.6, size.height * 0.4); path.lineTo(size.width * 0.8, size.height * 0.3);
+    path.lineTo(size.width, size.height * 0.2); canvas.drawPath(path, paint);
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
