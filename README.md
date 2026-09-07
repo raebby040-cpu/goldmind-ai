@@ -11,7 +11,7 @@ Professional dark-theme Flutter prototype for XAUUSD paper analysis.
 - AI insights screen
 - Trade history
 - Settings screen
-- Broker execution
+- No broker execution
 
 ## Build an APK
 
