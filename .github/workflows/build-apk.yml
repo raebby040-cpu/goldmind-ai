@@ -20,7 +20,7 @@ jobs:
           channel: stable
 
       - name: Create missing Flutter platform files
-        run: flutter create . --platforms=android
+        run: flutter create . --platforms=android --project-name raebby
 
       - name: Get dependencies
         run: flutter pub get
